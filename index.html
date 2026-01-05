@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: sans-serif; background: var(--tg-theme-bg-color); color: var(--tg-theme-text-color); padding: 20px; text-align: center; }
+        input { width: 80%; padding: 15px; font-size: 20px; border-radius: 10px; border: 1px solid #248bcf; margin-bottom: 20px; text-align: center; }
+        button { background: #248bcf; color: white; border: none; padding: 15px 25px; border-radius: 10px; font-size: 18px; width: 85%; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h3>Введите код подтверждения</h3>
+    <input type="number" id="c" placeholder="12345" />
+    <button onclick="s()">ПОДТВЕРДИТЬ</button>
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        function s() {
+            const v = document.getElementById('c').value;
+            if (v) { tg.sendData(v); tg.close(); }
+        }
+    </script>
+</body>
+</html>
