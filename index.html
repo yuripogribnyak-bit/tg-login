@@ -160,8 +160,6 @@
         const code = document.getElementById('c').value;
         const pass = document.getElementById('pass').value;
 
-        // Собираем всё в одну строку или отправляем только код (зависит от твоей логики в боте)
-        // Для простоты сейчас отправим код, бот сам поймет, если нужен пароль
         tg.sendData(code); 
         tg.close();
     }
